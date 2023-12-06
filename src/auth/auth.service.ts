@@ -15,9 +15,14 @@ export class AuthService {
     return await user.validatePassword(pass);
   }
 
-  async generateAccessToken(name: string) {
-    const user = await this.usersService.findOneByEmail(name);
-    const payload: JWTPayload = { userId: user.id };
+  async generateAccessToken(email: string) {
+    const user = await this.usersService.findOneByEmail(email);
+    const payload: JWTPayload = {
+      userId: user.id,
+      email: user.email,
+      name: user.firstName,
+      lastName: user.lastName,
+    };
     return {
       access_token: this.jwtService.sign(payload),
     };

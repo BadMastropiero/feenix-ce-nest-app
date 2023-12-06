@@ -7,8 +7,13 @@ POST {{host}}/users
 Content-Type: application/json
 
 {
-  "firstName": "John",
+  "firstName": "Jane",
   "lastName": "Doe",
-  "email": "john@doe.com",
+  "email": "jane@doe.com",
   "password": "123456"
 }
+
+### Get user by id
+GET {{host}}/users/94f41543-90e2-4fd6-9bae-2e88c12ff473
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
