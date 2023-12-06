@@ -30,4 +30,9 @@ export class User {
   async validatePassword(password: string): Promise<boolean> {
     return bcrypt.compareSync(password, this.password);
   }
+
+  toJSON(): Record<string, any> {
+    const { password, ...self } = this;
+    return self;
+  }
 }
