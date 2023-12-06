@@ -1,0 +1,8 @@
+### Login
+POST {{host}}/auth
+Content-Type: application/json
+
+{
+  "email": "john@doe.com",
+  "password": "123456"
+}

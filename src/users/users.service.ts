@@ -14,8 +14,12 @@ export class UsersService {
     return this.usersRepository.find();
   }
 
-  findOne(id: number): Promise<User | null> {
+  findOne(id: string): Promise<User | null> {
     return this.usersRepository.findOneBy({ id });
+  }
+
+  findOneByEmail(email: string): Promise<User | null> {
+    return this.usersRepository.findOneBy({ email });
   }
 
   async create(user: Partial<User>): Promise<User> {
@@ -23,12 +27,12 @@ export class UsersService {
     return this.usersRepository.save(new_user);
   }
 
-  async update(id: number, user: Partial<User>): Promise<User> {
+  async update(id: string, user: Partial<User>): Promise<User> {
     await this.usersRepository.update(id, user);
     return this.usersRepository.findOne({ where: { id } });
   }
 
-  async delete(id: number): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.usersRepository.delete(id);
   }
 }
