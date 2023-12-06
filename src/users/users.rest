@@ -1,0 +1,13 @@
+### Get all users
+GET {{host}}/users
+Accept: application/json
+
+### Create user
+POST {{host}}/users
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john@doe.com"
+}

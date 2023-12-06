@@ -26,6 +26,11 @@ docker compose down -v
 
 ## Running the app
 
+Prepare the database:
+```bash
+yarn typeorm migration:run -d data-source.ts
+```
+
 Development:
 
 ```bash
@@ -62,6 +67,12 @@ test coverage:
 
 ```bash
 yarn run test:cov
+```
+
+## Dev Flow
+Create new migration:
+```bash
+yarn typeorm migration:create src/migrations/<name>
 ```
 
 ## License
