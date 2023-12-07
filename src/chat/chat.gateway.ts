@@ -6,6 +6,7 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import {v4 as uuidv4} from 'uuid';
+import OpenAI from "openai";
 
 interface User {
   id: string;
@@ -27,11 +28,15 @@ const chatbotUser: User = {
 @WebSocketGateway()
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server;
-  users: number = 0;
+  users: Record<string, Message[]> = {};
+
+  openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY, // defaults to process.env["OPENAI_API_KEY"]
+  });
 
   async handleConnection(client) {
     // A client has connected
-    this.users++;
+    this.users[client.id] = [];
 
     client.emit('message', {id: uuidv4(), text: "Hello you", user: chatbotUser, createdAt: new Date()});
 
@@ -39,17 +44,27 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.emit('users', this.users);
   }
 
-  async handleDisconnect() {
+  async handleDisconnect(client) {
     // A client has disconnected
-    this.users--;
+    delete this.users[client.id];
 
-    // Notify connected clients of current users
     this.server.emit('users', this.users);
   }
 
   @SubscribeMessage('message')
   async onChat(client, message) {
-    const response = "Response to: " + message.text;
-    client.emit('message', {id: uuidv4(), text: response, user: chatbotUser, createdAt: new Date()});
+    const answerId = uuidv4();
+    this.users[client.id].push({id: answerId, text: message.text, user: message.user, createdAt: new Date()});
+    console.log({m: this.users[client.id]})
+    const stream = await this.openai.chat.completions.create({
+      // messages: [{role: 'user', content: message.text}],
+      messages: this.users[client.id].map(message => ({role: 'user', content: message.text})),
+      model: 'gpt-3.5-turbo',
+      stream: true,
+    });
+    for await (const chunk of stream) {
+      const response = chunk.choices[0]?.delta?.content || '';
+      client.emit('message', {id: answerId, text: response, user: chatbotUser, createdAt: new Date()});
+    }
   }
 }
