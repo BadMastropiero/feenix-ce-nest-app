@@ -1,12 +1,15 @@
 import {
-  WebSocketGateway,
-  WebSocketServer,
-  SubscribeMessage,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
 import {v4 as uuidv4} from 'uuid';
 import OpenAI from "openai";
+import {JwtService} from "@nestjs/jwt";
+import {JWTPayload} from "../auth/jwt.payload";
+import {AuthService} from "../auth/auth.service";
 
 interface User {
   id: string;
@@ -34,11 +37,37 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     apiKey: process.env.OPENAI_API_KEY, // defaults to process.env["OPENAI_API_KEY"]
   });
 
+  constructor(
+    private jwtService: JwtService,
+    private authService: AuthService,
+  ) {
+  }
+
   async handleConnection(client) {
     // A client has connected
+    try {
+      await this.authService.validateToken(client.handshake.auth.token)
+    } catch {
+      client.emit('message', {
+        id: uuidv4(),
+        text: `Hello you, please authenticate yourself`,
+        user: chatbotUser,
+        createdAt: new Date()
+      });
+      client.disconnect();
+      return;
+    }
+
+    const user = this.extractUserFromToken(client.handshake.auth.token);
+
     this.users[client.id] = [];
 
-    client.emit('message', {id: uuidv4(), text: "Hello you", user: chatbotUser, createdAt: new Date()});
+    client.emit('message', {
+      id: uuidv4(),
+      text: `Hello ${user?.firstName} ${user?.lastName}`,
+      user: chatbotUser,
+      createdAt: new Date()
+    });
 
     // Notify connected clients of current users
     this.server.emit('users', this.users);
@@ -65,6 +94,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     for await (const chunk of stream) {
       const response = chunk.choices[0]?.delta?.content || '';
       client.emit('message', {id: answerId, text: response, user: chatbotUser, createdAt: new Date()});
+    }
+  }
+
+  private extractUserFromToken(token: string): JWTPayload | undefined {
+    try {
+      return this.jwtService.decode(token);
+    } catch {
+      return undefined;
     }
   }
 }
