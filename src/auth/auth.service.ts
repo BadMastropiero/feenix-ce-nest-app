@@ -58,6 +58,7 @@ export class AuthService {
     const user = await this.usersService.findOneByEmail(email);
     const payload: JWTRefreshPayload = {
       userId: user.id,
+      email: user.email,
     };
 
     const rt = this.jwtService.sign(payload, {

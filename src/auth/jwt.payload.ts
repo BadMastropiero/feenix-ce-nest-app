@@ -7,4 +7,5 @@ export interface JWTPayload {
 
 export interface JWTRefreshPayload {
   userId: string;
+  email: string;
 }
