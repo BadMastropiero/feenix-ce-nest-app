@@ -16,7 +16,7 @@ export const options: DataSourceOptions = {
   database: process.env.POSTGRES_DB,
   entities: [User, RefreshToken, Message, Conversation],
   synchronize: false,
-  logging: true,
+  logging: false,
   subscribers: [],
 };
 export const AppDataSource = new DataSource({

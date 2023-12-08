@@ -107,16 +107,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // Persist message if more than 3 messages
     const conversationId = this.conversationByUser[user.userId];
-    console.log({ m: this.messagesByUserId[user.userId], c: conversationId });
+
     if (
       this.messagesByUserId[user.userId].length === this.MESSAGES_BEFORE_PERSIST
     ) {
-      for (const message1 of this.messagesByUserId[user.userId]) {
+      for (const messageItem of this.messagesByUserId[user.userId]) {
         await this.chatService.addMessageWithUserId(
           conversationId,
-          user.userId,
+          messageItem.user?.id !== chatbotUser.id ? user.userId : null,
           {
-            text: message1.text,
+            text: messageItem.text,
           },
         );
       }
@@ -162,7 +162,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const fullAssistantMsg: Message = {
       id: answerId,
       text: fullResponse,
-      user: null,
+      user: chatbotUser,
       createdAt: new Date(),
     };
     this.messagesByUserId[user.userId].push(fullAssistantMsg);
@@ -191,6 +191,35 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       user: chatbotUser,
       createdAt: new Date(),
     });
+  }
+
+  @SubscribeMessage('restore')
+  async onRestore(client, message) {
+    const user = this.extractUserFromToken(client.handshake.auth.token);
+    if (!user) return;
+
+    const conversation = await this.chatService.findOneWithMessages(
+      message.conversationId,
+    );
+    const messagesWithUser = conversation?.messages.map((message) => ({
+      id: message.id,
+      text: message.text,
+      user: message.user
+        ? {
+            id: message.user.id,
+            name: message.user.firstName,
+          }
+        : chatbotUser,
+      createdAt: message.created_at,
+    }));
+
+    this.messagesByUserId[user.userId] = messagesWithUser;
+    this.conversationByUser[user.userId] = conversation.id;
+    client.emit('restore_back', {});
+
+    for (const message of messagesWithUser) {
+      client.emit('message', message);
+    }
   }
 
   private extractUserFromToken(token: string): JWTPayload | undefined {

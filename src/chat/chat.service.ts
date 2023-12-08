@@ -24,6 +24,15 @@ export class ChatService {
     return this.conversationsRepository.findOneBy({ id });
   }
 
+  async findOneWithMessages(id: string): Promise<Conversation> {
+    return await this.conversationsRepository
+      .createQueryBuilder('conversation')
+      .leftJoinAndSelect('conversation.messages', 'message')
+      .leftJoinAndSelect('message.user', 'user')
+      .where('conversation.id = :id', { id })
+      .getOne();
+  }
+
   findAllByUserId(id: string): Promise<Conversation[] | null> {
     return this.conversationsRepository.findBy({ user: { id } });
   }
