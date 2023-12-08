@@ -1,5 +1,12 @@
 import * as bcrypt from 'bcrypt';
-import { Entity, Column, PrimaryGeneratedColumn, BeforeInsert } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  BeforeInsert,
+  OneToMany,
+} from 'typeorm';
+import { Conversation } from '../chat/conversation.entity';
 
 @Entity()
 export class User {
@@ -30,6 +37,9 @@ export class User {
   async validatePassword(password: string): Promise<boolean> {
     return bcrypt.compareSync(password, this.password);
   }
+
+  @OneToMany(() => Conversation, (conversation) => conversation.user)
+  conversations: Conversation[];
 
   toJSON(): Record<string, any> {
     const { password, ...self } = this;
