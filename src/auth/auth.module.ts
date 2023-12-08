@@ -6,11 +6,14 @@ import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth.guard';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { RefreshToken } from './refreshtoken.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     UsersModule,
+    TypeOrmModule.forFeature([RefreshToken]),
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,

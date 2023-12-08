@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { User } from './src/users/user.entity';
 import * as dotenv from 'dotenv';
+import {RefreshToken} from "./src/auth/refreshtoken.entity";
 
 dotenv.config();
 export const options: DataSourceOptions = {
@@ -11,7 +12,7 @@ export const options: DataSourceOptions = {
   username: process.env.POSTGRES_USER,
   password: process.env.POSTGRES_PASSWORD,
   database: process.env.POSTGRES_DB,
-  entities: [User],
+  entities: [User, RefreshToken],
   synchronize: false,
   logging: true,
   subscribers: [],

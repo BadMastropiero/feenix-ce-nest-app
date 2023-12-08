@@ -4,3 +4,7 @@ export interface JWTPayload {
   firstName: string;
   lastName: string;
 }
+
+export interface JWTRefreshPayload {
+  userId: string;
+}

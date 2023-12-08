@@ -79,12 +79,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     this.server.emit('users', this.users);
   }
-
+  
   @SubscribeMessage('message')
   async onChat(client, message) {
     const answerId = uuidv4();
     this.users[client.id].push({id: answerId, text: message.text, user: message.user, createdAt: new Date()});
-    console.log({m: this.users[client.id]})
     const stream = await this.openai.chat.completions.create({
       // messages: [{role: 'user', content: message.text}],
       messages: this.users[client.id].map(message => ({role: 'user', content: message.text})),
