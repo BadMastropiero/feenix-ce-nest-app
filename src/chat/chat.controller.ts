@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards, Request } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { Conversation } from './conversation.entity';
 import { Public } from '../public/public.decorator';
@@ -17,7 +17,14 @@ export class ChatController {
   @Public()
   @UseGuards(SameUserGuard)
   @Get('conversations/:id')
-  async findOne(@Param('id') id: string): Promise<Conversation[]> {
+  async findAllByUserId(@Param('id') id: string): Promise<Conversation[]> {
     return await this.chatService.findConversationWithMessagesByUserId(id);
+  }
+
+  @Get('conversations')
+  async findAllOfCurrentUser(@Request() req): Promise<Conversation[]> {
+    return await this.chatService.findConversationWithMessagesByUserId(
+      req.user.userId,
+    );
   }
 }

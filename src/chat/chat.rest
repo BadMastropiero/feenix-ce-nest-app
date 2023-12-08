@@ -2,3 +2,8 @@
 GET {{host}}/chat/conversations/{{user_id}}
 Content-Type: application/json
 Authorization: Bearer {{auth_token}}
+
+### Get user conversations
+GET {{host}}/chat/conversations
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}

@@ -34,6 +34,7 @@ export class ChatService {
     return await this.conversationsRepository
       .createQueryBuilder('conversation')
       .leftJoinAndSelect('conversation.messages', 'message')
+      .leftJoinAndSelect('message.user', 'user')
       .where('conversation.userId = :userId', { userId })
       .getMany();
   }
